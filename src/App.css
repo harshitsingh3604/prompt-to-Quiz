@@ -4,8 +4,13 @@
   padding: 2rem;
   text-align: center;
 }
+*{
+  margin: 0rem;
+  padding: 0rem;
+  box-sizing: border-box;
+}
 
-.logo {
+/* .logo {                                             pehle se hi tha
   height: 6em;
   padding: 1.5em;
   will-change: filter;
@@ -39,4 +44,10 @@
 
 .read-the-docs {
   color: #888;
-}
+/* } 
+/* yaha tak */
+
+
+
+
+
