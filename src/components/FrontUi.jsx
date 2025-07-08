@@ -1,26 +1,58 @@
 
 import "./Frontuistyling.css"
+import { useState } from 'react'
+// { prompt, setPrompt, language, setLanguage, difficulty, setDifficulty, quiz, setQuiz }
 
-function FrontUi({ prompt, setPrompt, language, setLanguage, difficulty, setDifficulty, quiz, setQuiz }){
+function FrontUi(){
+
+    const [prompt, setPrompt] = useState(""); 
+    const [language, setLanguage] = useState("English"); // Default language
+    const [difficulty, setDifficulty] = useState("Easy"); // Default difficulty
+    const [quiz, setQuiz] = useState("");                 // To store the generated quiz (empty for now)
+
+    function promptValue(event ){
+        return( 
+            setPrompt(event.target.value)
+        )
+    }
+
+    function languagetValue(event ){
+        return( 
+            setLanguage(event.target.value)
+        )
+    }
+
+    function difficultyvalue(event ){
+        return( 
+            setDifficulty(event.target.value)
+        )
+    }
+    function quizBox(event){
+        return( 
+            setQuiz(`Prompt: ${prompt}, Language: ${language}, Difficulty: ${difficulty}`)
+        )
+    }
+
+
     return (
       
             <div className = "FrontUi">
                 
-                <input type="text" id = "promptbox" value={prompt}  onChange={(event) => setPrompt(event.target.value)} 
+                <input type="text" id = "promptbox" value={prompt}  onChange={promptValue} 
                 placeholder="Enter your quiz prompt here..." ></input>
                 <span className='dropDown'>
-                <select className='option' value={language} onChange={(e) => setLanguage(e.target.value)}>
+                <select className='option' value={language} onChange={languagetValue}>
                     <option value="English">English</option>
                     <option value="Hindi">Hindi</option>
                 </select>
-                    <select className='option' value={difficulty}onChange={(e) => setDifficulty(e.target.value)}>
+                    <select className='option' value={difficulty} onChange={difficultyvalue}>
                     <option value="Easy">Easy</option>
                     <option value="Meduim">Medium</option>
                     <option value="Hard">Hard</option>
                 </select>
                 </span>
                 <input type="submit"  id = "generatequiz" value="Generate Quiz"
-                onClick={() => setQuiz(`Prompt: ${prompt}, Language: ${language}, Difficulty: ${difficulty}`)}/>
+                onClick={quizBox}/>
                 <textarea name="textBox" value={quiz} readOnly id="quizappear" cols="30" rows="10">your quiz appear here...</textarea>
             </div>
         
