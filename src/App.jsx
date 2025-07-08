@@ -10,8 +10,7 @@ function App() {
     <>
       <div className = "wrapper">
         <h1> Prompt to Quiz Generator</h1>
-         <FrontUi   /*prompt={prompt}} */
-        ></FrontUi>
+         <FrontUi ></FrontUi>
       </div>
      
     </>
