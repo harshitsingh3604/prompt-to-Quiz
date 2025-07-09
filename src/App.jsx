@@ -3,9 +3,7 @@ import './App.css'
 import FrontUi from './components/FrontUi'
 
 function App() {
-  //         // To store quiz prompt
-  
-
+       
   return (
     <>
       <div className = "wrapper">

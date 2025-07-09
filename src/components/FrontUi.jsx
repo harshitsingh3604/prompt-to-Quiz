@@ -1,11 +1,11 @@
 
 import "./Frontuistyling.css"
 import { useState } from 'react'
-// { prompt, setPrompt, language, setLanguage, difficulty, setDifficulty, quiz, setQuiz }
+import axios from 'axios';
 
 function FrontUi(){
 
-    const [prompt, setPrompt] = useState(""); 
+     const [prompt, setPrompt] = useState("");             // To store quiz prompt
     const [language, setLanguage] = useState("English"); // Default language
     const [difficulty, setDifficulty] = useState("Easy"); // Default difficulty
     const [quiz, setQuiz] = useState("");                 // To store the generated quiz (empty for now)
@@ -32,7 +32,21 @@ function FrontUi(){
             setQuiz(`Prompt: ${prompt}, Language: ${language}, Difficulty: ${difficulty}`)
         )
     }
-
+    const handleGenerateQuiz = async () => {
+        try {
+          const response = await axios.post('http://localhost:3000/generate-quiz', {
+            prompt,
+          language,
+           difficulty
+          });
+      
+          setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
+        } catch (error) {
+          console.error("Error generating quiz:", error);
+          setQuiz("Failed to generate quiz.");
+        }
+      };
+      
 
     return (
       
@@ -52,7 +66,7 @@ function FrontUi(){
                 </select>
                 </span>
                 <input type="submit"  id = "generatequiz" value="Generate Quiz"
-                onClick={quizBox}/>
+                onClick={handleGenerateQuiz}/>
                 <textarea name="textBox" value={quiz} readOnly id="quizappear" cols="30" rows="10">your quiz appear here...</textarea>
             </div>
         
