@@ -9,6 +9,8 @@ function FrontUi(){
     const [language, setLanguage] = useState("English"); // Default language
     const [difficulty, setDifficulty] = useState("Easy"); // Default difficulty
     const [quiz, setQuiz] = useState("");                 // To store the generated quiz (empty for now)
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     function promptValue(event ){
         return( 
@@ -27,24 +29,26 @@ function FrontUi(){
             setDifficulty(event.target.value)
         )
     }
-    function quizBox(event){
-        return( 
-            setQuiz(`Prompt: ${prompt}, Language: ${language}, Difficulty: ${difficulty}`)
-        )
-    }
+      
     const handleGenerateQuiz = async () => {
+        setLoading(true); 
+        console.log("loading...");
         try {
-          const response = await axios.post('http://localhost:3000/generate-quiz', {
+             setLoading( true)
+            const response = await axios.post('http://localhost:3000/generate-quiz', {
             prompt,
-          language,
-           difficulty
+            language,
+           difficulty,
           });
       
           setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
+          setError("");
         } catch (error) {
-          console.error("Error generating quiz:", error);
+          setError("Failed to generate quiz. Please try again later.");
+        //   console.error("Error generating quiz:", error);
           setQuiz("Failed to generate quiz.");
         }
+        setLoading(false);
       };
       
 
@@ -65,9 +69,12 @@ function FrontUi(){
                     <option value="Hard">Hard</option>
                 </select>
                 </span>
-                <input type="submit"  id = "generatequiz" value="Generate Quiz"
-                onClick={handleGenerateQuiz}/>
-                <textarea name="textBox" value={quiz} readOnly id="quizappear" cols="30" rows="10">your quiz appear here...</textarea>
+                <input type="submit"  id = "generatequiz" value = {loading ? "Loading..." : "Generate Quiz"}
+                onClick={handleGenerateQuiz}  disabled={loading}/>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+
+                <textarea name="textBox" value={quiz} readOnly id="quizappear"
+                 cols="30" rows="10">your quiz appear here...</textarea>
             </div>
         
        

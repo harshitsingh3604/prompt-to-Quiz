@@ -15,16 +15,16 @@ app.get('/test', (req, res) => {
 
 app.post('/generate-quiz', (req, res) => {
     const { prompt, language, difficulty } = req.body;
+      async() => await new Promise(resolve => setTimeout(resolve, 3000));
   
     // Mock quiz result
     const quiz = {
-      question: `This is a sample quiz for: ${prompt}`,
+      question: `Your question appear here: ${prompt}`,
       options: ["Option 1", "Option 2", "Option 3", "Option 4"],
       answer: "Option 1",
       language,
       difficulty,
     };
-  
     res.json(quiz);
   });
   
