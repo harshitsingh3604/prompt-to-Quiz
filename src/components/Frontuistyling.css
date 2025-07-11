@@ -66,10 +66,10 @@
   }
   #generatequiz:hover{
     background-color: blue;
-    color: white;
+    color: white
   } 
   
-  #quizappear{
+  .quiz-display{
     width: 100%;
     max-width:600px;
     margin: 0.5rem 0;

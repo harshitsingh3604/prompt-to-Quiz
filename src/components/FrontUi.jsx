@@ -5,12 +5,15 @@ import axios from 'axios';
 
 function FrontUi(){
 
-     const [prompt, setPrompt] = useState("");             // To store quiz prompt
-    const [language, setLanguage] = useState("English"); // Default language
-    const [difficulty, setDifficulty] = useState("Easy"); // Default difficulty
-    const [quiz, setQuiz] = useState("");                 // To store the generated quiz (empty for now)
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+     const [prompt, setPrompt] = useState("");               // To store quiz prompt
+    const [language, setLanguage] = useState("English");     // Default language
+    const [difficulty, setDifficulty] = useState("Easy");    // Default difficulty
+    const [quiz, setQuiz] = useState("NULL");                // To store the generated quiz (empty for now)
+    const [error, setError] = useState("");                  // Error Handliing
+    const [loading, setLoading] = useState(false);           //  Shows Loading State 
+    const [userAnswer, setUserAnswer] = useState("");        // to store what user clicked
+     const [result, setResult] = useState("");               // to store whether it's correct or wrong
+
 
     function promptValue(event ){
         return( 
@@ -41,8 +44,9 @@ function FrontUi(){
            difficulty,
           });
       
-          setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
-          setError("");
+        //   setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
+        setQuiz(response.data); 
+        setError("");
         } catch (error) {
           setError("Failed to generate quiz. Please try again later.");
         //   console.error("Error generating quiz:", error);
@@ -50,6 +54,16 @@ function FrontUi(){
         }
         setLoading(false);
       };
+
+      function handleOptionClick(selectedOption) {
+        setUserAnswer(selectedOption);
+        if (quiz.answer === selectedOption) {
+            setResult("Correct ✅");
+        } else {
+            setResult("Wrong ❌");
+        }
+    }
+    
       
 
     return (
@@ -73,8 +87,35 @@ function FrontUi(){
                 onClick={handleGenerateQuiz}  disabled={loading}/>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
 
-                <textarea name="textBox" value={quiz} readOnly id="quizappear"
-                 cols="30" rows="10">your quiz appear here...</textarea>
+                {/* <textarea name="textBox" value={quiz && quiz.question
+                    ? language + "\n" + difficulty + "\n" + quiz.question + "\n" + {quiz.options.map((option, index) => (
+                        <button key={index} onClick={() => handleOptionClick(option)}>
+                           {option}
+                        </button>
+                     ))}
+                     
+            : "Your quiz will appear here..."} readOnly id="quizappear"
+                 cols="30" rows="10">your quiz appear here...</textarea> */}
+                 <div className="quiz-display">
+                {quiz && quiz.question ? (
+                    <>
+                        <p><strong>Language:</strong> {language}</p>
+                        <p><strong>Difficulty:</strong> {difficulty}</p>
+                        <p><strong>Question:</strong> {quiz.question}</p>
+
+                        {quiz.options.map((option, index) => (
+                            <button key={index} onClick={() => handleOptionClick(option)}>
+                                {option}
+                            </button>
+                        ))}
+
+                        {result && <p><strong>Result:</strong> {result}</p>}
+                    </>
+                ) : (
+                    <p>Your quiz will appear here...</p>
+                )}
+            </div>
+
             </div>
         
        
