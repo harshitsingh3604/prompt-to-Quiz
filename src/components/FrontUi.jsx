@@ -2,17 +2,18 @@
 import "./Frontuistyling.css"
 import { useState } from 'react'
 import axios from 'axios';
+// import { normalizeModuleId } from "vite/module-runner";
 
 function FrontUi(){
 
-     const [prompt, setPrompt] = useState("");               // To store quiz prompt
+    const [prompt, setPrompt] = useState("");                 // To store quiz prompt
     const [language, setLanguage] = useState("English");     // Default language
     const [difficulty, setDifficulty] = useState("Easy");    // Default difficulty
-    const [quiz, setQuiz] = useState("NULL");                // To store the generated quiz (empty for now)
+    const [quiz, setQuiz] = useState(null);                  // To store the generated quiz (empty for now)
     const [error, setError] = useState("");                  // Error Handliing
     const [loading, setLoading] = useState(false);           //  Shows Loading State 
     const [userAnswer, setUserAnswer] = useState("");        // to store what user clicked
-     const [result, setResult] = useState("");               // to store whether it's correct or wrong
+    const [result, setResult] = useState("");               // to store whether it's correct or wrong
 
 
     function promptValue(event ){
@@ -34,10 +35,12 @@ function FrontUi(){
     }
       
     const handleGenerateQuiz = async () => {
+        setUserAnswer("");
+        setResult("");
         setLoading(true); 
         console.log("loading...");
         try {
-             setLoading( true)
+            //  setLoading( true)
             const response = await axios.post('http://localhost:3000/generate-quiz', {
             prompt,
             language,
@@ -55,12 +58,12 @@ function FrontUi(){
         setLoading(false);
       };
 
-      function handleOptionClick(selectedOption) {
-        setUserAnswer(selectedOption);
-        if (quiz.answer === selectedOption) {
-            setResult("Correct ✅");
+      function handleOptionClick(option) {
+        setUserAnswer(option);
+        if (quiz.answer === option) {
+            setResult("correct");
         } else {
-            setResult("Wrong ❌");
+            setResult("wrong");
         }
     }
     
@@ -99,17 +102,29 @@ function FrontUi(){
                  <div className="quiz-display">
                 {quiz && quiz.question ? (
                     <>
-                        <p><strong>Language:</strong> {language}</p>
-                        <p><strong>Difficulty:</strong> {difficulty}</p>
-                        <p><strong>Question:</strong> {quiz.question}</p>
+                        <span><strong>Language:</strong> {language}</span>
+                        <span><strong>Difficulty:</strong> {difficulty}</span>
+                        <p className="quiz-question"><strong>Question:</strong> {quiz.question}</p>
 
-                        {quiz.options.map((option, index) => (
-                            <button key={index} onClick={() => handleOptionClick(option)}>
-                                {option}
-                            </button>
+                        <div className="quiz-options">
+                           {quiz.options.map((option, index) => (
+                     <label key={index} className="option-label">
+                     <input
+                       type="radio"
+                       name="quiz-option"
+                       value={option}
+                       checked={userAnswer === option}
+                       onChange={() => handleOptionClick(option)}
+                    //    disabled={!!result} // disable selection after answering
+                     />
+                     {option}
+                   </label>
                         ))}
+                        </div>
 
-                        {result && <p><strong>Result:</strong> {result}</p>}
+              {result && (
+              <p className={`result-text ${result === 'correct' ? 'correct' : 'wrong'}`}>Result: {result === 'correct' ? 'Correct ✅' : 'Wrong ❌'}</p>
+            )}
                     </>
                 ) : (
                     <p>Your quiz will appear here...</p>
