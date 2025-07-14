@@ -2,6 +2,9 @@
 import "./Frontuistyling.css"
 import { useState } from 'react'
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 // import { normalizeModuleId } from "vite/module-runner";
 
 function FrontUi(){
@@ -45,6 +48,12 @@ function FrontUi(){
         setResult("");
         setLoading(true); 
         console.log("loading...");
+        if (!prompt.trim()) {
+            toast.warning(" Please enter a quiz prompt before generating.");
+            setLoading(false); 
+            return; 
+          }
+          
         try {
             const response = await axios.post('http://localhost:3000/generate-quiz', {
             prompt,
@@ -54,11 +63,13 @@ function FrontUi(){
       
         //   setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
         setQuiz(response.data); 
+        toast.success("Quiz generated successfully!");
         setError("");
         } 
         catch (error) {
           setError("Failed to generate quiz. Please try again later.");
           setQuiz(null);
+          toast.error("Something went wrong!");
         }
         setLoading(false);
       };
@@ -77,7 +88,7 @@ function FrontUi(){
             options: quiz.options,
             userAnswer: option,
             correctAnswer: quiz.answer,
-            result: option === quiz.answer ? "Correct" : "wrong",
+            result: option === quiz.answer ? "correct" : "wrong",
           };
 
           let history = JSON.parse(localStorage.getItem("quiz-history")) || [];
@@ -140,7 +151,7 @@ function FrontUi(){
                        value={option}
                        checked={userAnswer === option}
                        onChange={() => handleOptionClick(option)}
-                       disabled={!!result} // disable selection after answering
+                    //    disabled={!!result} // disable selection after answering
                      />
                      {option}
                    </label>
@@ -171,6 +182,7 @@ function FrontUi(){
                 </div>
             </div>                  
             ))}
+            <ToastContainer />
 
             </div>
         

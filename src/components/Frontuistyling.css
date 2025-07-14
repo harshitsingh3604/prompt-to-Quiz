@@ -62,11 +62,14 @@
     outline: none;
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    /* transition: background-color 0.3s ease; */
+    transition: all 0.3s ease-in-out;
   }
   #generatequiz:hover{
     background-color: blue;
-    color: white
+    color: white;
+    transform: scale(1.05);
+    
   } 
   
   .quiz-display{
