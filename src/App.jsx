@@ -1,4 +1,4 @@
-import { useState } from 'react'
+// import { useState } from 'react'
 import './App.css'
 import FrontUi from './components/FrontUi'
 
@@ -8,7 +8,7 @@ function App() {
     <>
       <div className = "wrapper">
         <h1> Prompt to Quiz Generator</h1>
-         <FrontUi ></FrontUi>
+         <FrontUi></FrontUi>
       </div>
      
     </>

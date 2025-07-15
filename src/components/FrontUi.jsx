@@ -5,18 +5,18 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// import { normalizeModuleId } from "vite/module-runner";
+
 
 function FrontUi(){
 
     const [prompt, setPrompt] = useState("");                 // To store quiz prompt
     const [language, setLanguage] = useState("English");     // Default language
     const [difficulty, setDifficulty] = useState("Easy");    // Default difficulty
-    const [quiz, setQuiz] = useState(null);                  // To store the generated quiz (empty for now)
+    const [quiz, setQuiz] = useState([]);                  // To store the generated quiz (empty for now)
     const [error, setError] = useState("");                  // Error Handliing
     const [loading, setLoading] = useState(false);           //  Shows Loading State 
-    const [userAnswer, setUserAnswer] = useState("");        // to store what user clicked
-    const [result, setResult] = useState("");               // to store whether it's correct or wrong
+    const [userAnswer, setUserAnswer] = useState({});        // to store what user clicked
+    const [results, setResults] = useState({});               // to store whether it's correct or wrong
     const [quizHistory, setQuizHistory] = useState([]);
 
 
@@ -44,10 +44,9 @@ function FrontUi(){
       
       
     const handleGenerateQuiz = async () => {
-        setUserAnswer("");
-        setResult("");
+        setUserAnswer({});
+        setResults({});
         setLoading(true); 
-        console.log("loading...");
         if (!prompt.trim()) {
             toast.warning(" Please enter a quiz prompt before generating.");
             setLoading(false); 
@@ -61,34 +60,50 @@ function FrontUi(){
            difficulty,
           });
       
-        //   setQuiz(JSON.stringify(response.data, null, 2)); // Save the quiz into your quiz state
-        setQuiz(response.data); 
-        toast.success("Quiz generated successfully!");
-        setError("");
+        //   setQuiz(JSON.stringify(response.data, null, 2)); 
+        // setQuiz(response.data); 
+        // toast.success("Quiz generated successfully!");
+        // setError("");
+         // Defensive check
+         if (Array.isArray(response.data) && response.data.length > 0) {
+            setQuiz(response.data);
+            toast.success("Quiz generated successfully!");
+            setError("");
+        } else {
+            setQuiz([]);
+            toast.warning("No quiz found for the given prompt.");
+        }
         } 
         catch (error) {
           setError("Failed to generate quiz. Please try again later.");
-          setQuiz(null);
+          setQuiz([]);
           toast.error("Something went wrong!");
         }
         setLoading(false);
       };
 
-      const handleOptionClick = (option) => {
-        setUserAnswer(option);
-        if (quiz.answer === option) {
-            setResult("correct");
-        } else {
-            setResult("wrong");
-        }
-        setResult(option === quiz.answer
-             ? "correct" : "wrong");
+      const handleOptionClick = (option, questionObj, index) => {
+        // setUserAnswer(option);
+        const key = `${index}-${option}`;
+        setUserAnswer(key);
+        // if (questionObj.answer === option) {
+        //     setResult("correct");
+        // } else {
+        //     setResult("wrong");
+        // }
+        // setResult(option === quiz.answer
+        //      ? "correct" : "wrong");
+        const isCorrect = questionObj.answer === option;
+        setResults(prev => ({
+          ...prev,
+          [index]: isCorrect ? "correct" : "wrong"
+        }));
         const currentQuizResult = {
-            question: quiz.question,
-            options: quiz.options,
+            question: questionObj.question,
+            options: questionObj.options,
             userAnswer: option,
-            correctAnswer: quiz.answer,
-            result: option === quiz.answer ? "correct" : "wrong",
+            correctAnswer: questionObj.answer,
+            result: option === questionObj.answer ? "correct" : "wrong",
           };
 
           let history = JSON.parse(localStorage.getItem("quiz-history")) || [];
@@ -117,7 +132,7 @@ function FrontUi(){
                 </select>
                     <select className='option' value={difficulty} onChange={difficultyvalue}>
                     <option value="Easy">Easy</option>
-                    <option value="Meduim">Medium</option>
+                    <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
                 </select>
                 </span>
@@ -135,53 +150,61 @@ function FrontUi(){
             : "Your quiz will appear here..."} readOnly id="quizappear"
                  cols="30" rows="10">your quiz appear here...</textarea> */}
                  <div className="quiz-display">
-                {quiz && quiz.question ? (
-                    <>
-                        <span><strong>Language:</strong> {language}</span>
-                        <span><strong>Difficulty:</strong> {difficulty}</span>
-                        <p className="quiz-question"><strong>Question:</strong> {quiz.question}</p>
-                        
-                
-                        <div className="quiz-options">
-                           {quiz.options.map((option, index) => (
-                     <label key={index} className="option-label">
-                     <input
-                       type="radio"
-                       name="quiz-option"
-                       value={option}
-                       checked={userAnswer === option}
-                       onChange={() => handleOptionClick(option)}
-                    //    disabled={!!result} // disable selection after answering
-                     />
-                     {option}
-                   </label>
-                        ))}
-                        </div>
+                 {quiz.length > 0 ? (
+  <div>
+   <div className=" language-button">
+   <span><strong>Language:</strong> {language}</span>
+    <span><strong>Difficulty:</strong> {difficulty}</span>
+   </div>
 
-              {result && (
-              <p className={`result-text ${result === 'correct' ? 'correct' : 'wrong'}`}>Result: {result === 'correct' ? 'Correct ✅' : 'Wrong ❌'}</p>
-            )}
-            <div className="storage">
-                <button className="history-button" onClick={handleViewHistory}>History</button>
-                <button className="history-clear-button" onClick={handleClearHistory}>Clear History</button>
-            </div>
-
-                    </>
-                ) : (
-                    <p>Your quiz will appear here...</p>
+    {quiz.map((q, i) => (
+      <div key={i} className="question-block">
+        <p className="quiz-question"><strong>Q{i + 1}:</strong> {q.question}</p>
+        <div className="quiz-options">
+          {q.options.map((option, index) => (
+            <label key={index} className="option-label">
+              <input
+                type="radio"
+                name={`quiz-option-${i}`}
+                value={option}
+                checked={userAnswer === `${i}-${option}`}
+                onChange={() => handleOptionClick(option, q, i)}
+              />
+              {option}
+            </label>
+          ))}
+        </div>
+        {results[i] && (
+                  <p className={`result-text ${results[i] === 'correct' ? 'correct' : 'wrong'}`}>
+                    Result: {results[i] === 'correct' ? 'Correct ✅' : 'Wrong ❌'}
+                  </p>
                 )}
+      </div>
+    ))}
+    
+    <div className="storage">
+      <button className="history-button" onClick={handleViewHistory}>History</button>
+      <button className="history-clear-button" onClick={handleClearHistory}>Clear History</button>
+    </div>
+  </div>
+) : (
+  <p>Your quiz will appear here...</p>
+)}
+
             </div>
-            {quizHistory.map((item, index) => (
-            <div className="quiz-history">
-                <h3>Quiz History</h3>
-                <div key={index} className="history-item">
-                    <p> Question : {item.question}</p>
-                    <p> Your Answer : {item.userAnswer}</p>
-                    <p> Correct Answer : {item.correctAnswer}</p>
-                    <p> Result : {item.result}</p>
-                </div>
-            </div>                  
-            ))}
+            {quizHistory.length > 0 && (
+  <div className="quiz-history">
+    <h3>Quiz History</h3>
+    {quizHistory.map((item, index) => (
+      <div key={index} className="history-item">
+        <p> Question : {item.question}</p>
+        <p> Your Answer : {item.userAnswer}</p>
+        <p> Correct Answer : {item.correctAnswer}</p>
+        <p> Result : {item.result}</p>
+      </div>
+    ))}
+  </div>
+)}
             <ToastContainer />
 
             </div>
