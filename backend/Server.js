@@ -31,13 +31,14 @@ app.post('/generate-quiz', (req, res) => {
   const { prompt, language, difficulty } = req.body;
   console.log("Received:", prompt, language, difficulty);
   const quiz = quizData.find((q) =>
-    prompt.toLowerCase().includes(q.topic.toLowerCase()) &&
+    q.topic.toLowerCase().includes(prompt.toLowerCase()) &&
     q.language === language &&
     q.difficulty === difficulty
   );
 
   if (quiz) {
-    console.log("MATCHED QUIZ:", quiz);
+    console.log("Matched quiz for:", prompt, "-", quiz);
+
 
     res.json(quiz.questions);
   } else {
