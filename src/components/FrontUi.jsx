@@ -4,6 +4,9 @@ import { useState } from 'react'
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+
 
 
 
@@ -114,6 +117,17 @@ function FrontUi(){
             localStorage.removeItem("quiz-history");  
             setQuizHistory([]);                      
           }
+
+
+          const handleLogout = () => {
+            signOut(auth)
+              .then(() => {
+                console.log("User signed out successfully.");
+              })
+              .catch((error) => {
+                console.error("Error signing out:", error.message);
+              });
+          };
           
 
              
@@ -121,6 +135,7 @@ function FrontUi(){
     return (
       
             <div className = "FrontUi">
+              <h1>Prompt to Quiz</h1>
                 
 
                 <input type="text" id = "promptbox" value={prompt}  onChange={promptValue} 
@@ -205,6 +220,11 @@ function FrontUi(){
     ))}
   </div>
 )}
+    <div>
+      <h1>Welcome to the App!</h1>
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+
             <ToastContainer />
 
             </div>
