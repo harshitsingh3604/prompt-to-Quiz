@@ -7,12 +7,17 @@ import Signuppage from "./components/Signup";
 import {useEffect} from "react";
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-
+import {app} from "./firebase"
+import { getFirestore } from "firebase/firestore";
+// import Quiz from "./components/Quiz"; 
 
 function App() {
 
   const [user,setUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
+
+  const firestore = getFirestore(app);
+
 
   function signup (){
     return(
@@ -53,7 +58,8 @@ function App() {
   return (
     <div>
       <div className = "wrapper">
-        <FrontUi></FrontUi>      
+        <FrontUi></FrontUi>   
+        {/* <Quiz />     */}
         </div> 
     </div>
   )

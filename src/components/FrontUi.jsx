@@ -21,6 +21,8 @@ function FrontUi(){
     const [userAnswer, setUserAnswer] = useState({});        // to store what user clicked
     const [results, setResults] = useState({});               // to store whether it's correct or wrong
     const [quizHistory, setQuizHistory] = useState([]);
+    const [score, setScore] = useState(null);
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
 
     function promptValue(event ){
@@ -88,7 +90,10 @@ function FrontUi(){
       const handleOptionClick = (option, questionObj, index) => {
         // setUserAnswer(option);
         const key = `${index}-${option}`;
-        setUserAnswer(key);
+        setUserAnswer(prev => ({
+          ...prev,
+          [index]: option
+        }));
         // if (questionObj.answer === option) {
         //     setResult("correct");
         // } else {
@@ -96,6 +101,7 @@ function FrontUi(){
         // }
         // setResult(option === quiz.answer
         //      ? "correct" : "wrong");
+
         const isCorrect = questionObj.answer === option;
         setResults(prev => ({
           ...prev,
@@ -112,11 +118,28 @@ function FrontUi(){
           let history = JSON.parse(localStorage.getItem("quiz-history")) || [];
           history.push(currentQuizResult);
           localStorage.setItem("quiz-history", JSON.stringify(history));
+          setScore(null);
         };
         function handleClearHistory() {
             localStorage.removeItem("quiz-history");  
             setQuizHistory([]);                      
           }
+
+          const calculateScore = () => {
+            let correctCount = 0;
+            quiz.forEach((q, index) => {
+              // const selected = userAnswer[`${index}-${q.options.find(opt => userAnswer === `${index}-${opt}`)}`];
+              if (results[index] === "correct") {
+              correctCount++;
+              results[index] = "correct";
+            }else {
+              results[index] = "wrong";
+            }
+            });
+            setScore(correctCount);
+            setResults(results);
+            setIsSubmitted(true);
+          };
 
 
           const handleLogout = () => {
@@ -166,34 +189,70 @@ function FrontUi(){
                  cols="30" rows="10">your quiz appear here...</textarea> */}
                  <div className="quiz-display">
                  {quiz.length > 0 ? (
-  <div>
-   <div className=" language-button">
-   <span><strong>Language:</strong> {language}</span>
-    <span><strong>Difficulty:</strong> {difficulty}</span>
-   </div>
+              <div>
+              <div className=" language-button">
+              <span><strong>Language:</strong> {language}</span>
+                <span><strong>Difficulty:</strong> {difficulty}</span>
+              </div>
 
-    {quiz.map((q, i) => (
-      <div key={i} className="question-block">
-        <p className="quiz-question"><strong>Q{i + 1}:</strong> {q.question}</p>
-        <div className="quiz-options">
-          {q.options.map((option, index) => (
-            <label key={index} className="option-label">
-              <input
-                type="radio"
-                name={`quiz-option-${i}`}
-                value={option}
-                checked={userAnswer === `${i}-${option}`}
-                onChange={() => handleOptionClick(option, q, i)}
-              />
-              {option}
-            </label>
-          ))}
-        </div>
-        {results[i] && (
+              {quiz.map((q, i) => (
+                <div key={i} className="question-block">
+                  <p className="quiz-question"><strong>Q{i + 1}:</strong> {q.question}</p>
+                  <div className="quiz-options">
+                    {/* {q.options.map((option, index) => (
+                      <label key={index} className="option-label">
+                        <input
+                        type="radio"
+                        name={`quiz-option-${i}`}
+                        value={option}
+                        checked={userAnswer[i] ===  option}
+                        onChange={() => handleOptionClick(option, q, i)}
+                        />
+                {option}
+              </label>
+            ))} */}
+            {q.options.map((option, j) => {
+               const isSelected = userAnswer[i] === option;
+               const isCorrectAnswer = q.answer === option;
+               const isUserWrongAnswer = isSelected && !isCorrectAnswer;
+  let className = "option";
+
+  // if (results[i] === "correct" && option === q.answer) {
+  //   className += " correct";
+  // } else if (
+  //   results[i] === "incorrect" &&
+  //   option === userAnswer[i] &&
+  //   option !== q.answer
+  // ) {
+  //   className += " incorrect";
+  // }
+  if (isSubmitted) {
+    if (isCorrectAnswer) className += " correct";
+    else if (isUserWrongAnswer) className += " wrong";
+  }
+
+  return (
+    <label key={j} className={className}>
+      <input
+        type="radio"
+        name={`question-${i}`}
+        value={option}
+        checked={isSelected}
+        onChange={() => handleOptionClick(option, q, i)}
+        // disabled={Object.keys(results).length > 0}
+        disabled={isSubmitted}
+      />
+      {option}
+    </label>
+  );
+})}
+
+          </div>
+        {/*  {results[i] && (
                   <p className={`result-text ${results[i] === 'correct' ? 'correct' : 'wrong'}`}>
                     Result: {results[i] === 'correct' ? 'Correct ✅' : 'Wrong ❌'}
                   </p>
-                )}
+                )}*/}
       </div>
     ))}
     
@@ -207,6 +266,19 @@ function FrontUi(){
 )}
 
             </div>
+            {quiz.length > 0 && (
+  <div className="score-section">
+    <button onClick={calculateScore} className="submit-button">
+      Submit Quiz
+    </button>
+    {score !== null && (
+      
+      <p className="score-text">Your Score: {score} / {quiz.length}</p>
+    )}
+  </div>
+)}
+
+
             {quizHistory.length > 0 && (
   <div className="quiz-history">
     <h3>Quiz History</h3>

@@ -150,6 +150,19 @@
     border-color: #c82333;
     color: white;
   }
+
+  .correct {
+    background-color: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+  }
+  
+  .incorrect {
+    background-color: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+  }
+  
   
   .result-text {
     margin-top: 16px;
@@ -226,3 +239,39 @@
     transform: translateY(-20px);
     position: relative;
   }
+
+
+
+
+  .option {
+    display: block;
+    margin: 5px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .option.correct {
+    background-color: #296136;
+    border-color: #28a745;
+    color: #fbfffc;
+  }
+  
+  .option.wrong {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+  }
+  
+  .submit-button {
+    padding: 10px 20px;
+    margin-top: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+  }
+  
