@@ -6,6 +6,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import {  doc,setDoc,addDoc,Timestamp,collection,query,where,getDocs   } from "firebase/firestore";
+import { db } from "../firebase"; 
+
 
 
 
@@ -42,16 +45,18 @@ function FrontUi(){
             setDifficulty(event.target.value)
         )
     }
-    function handleViewHistory() {
-        const storedHistory = JSON.parse(localStorage.getItem("quiz-history")) || [];
-        setQuizHistory(storedHistory);
-      }
+    // function handleViewHistory() {
+    //     const storedHistory = JSON.parse(localStorage.getItem("quiz-history")) || [];
+    //     setQuizHistory(storedHistory);
+    //   }
       
       
     const handleGenerateQuiz = async () => {
         setUserAnswer({});
         setResults({});
         setLoading(true); 
+        setScore(null);
+        setIsSubmitted(false);
         if (!prompt.trim()) {
             toast.warning(" Please enter a quiz prompt before generating.");
             setLoading(false); 
@@ -81,7 +86,7 @@ function FrontUi(){
         } 
         catch (error) {
           setError("Failed to generate quiz. Please try again later.");
-          setQuiz([]);
+          // setQuiz([]);
           toast.error("Something went wrong!");
         }
         setLoading(false);
@@ -115,30 +120,79 @@ function FrontUi(){
             result: option === questionObj.answer ? "correct" : "wrong",
           };
 
-          let history = JSON.parse(localStorage.getItem("quiz-history")) || [];
+          const history = JSON.parse(localStorage.getItem("quiz-history")) || [];
           history.push(currentQuizResult);
           localStorage.setItem("quiz-history", JSON.stringify(history));
-          setScore(null);
+          // setScore(null);
         };
         function handleClearHistory() {
             localStorage.removeItem("quiz-history");  
             setQuizHistory([]);                      
           }
 
-          const calculateScore = () => {
+          const calculateScore = async () => {
             let correctCount = 0;
+            const updatedResults = {};
+              if (Object.keys(userAnswer).length !== quiz.length) {
+    toast.warning("Please answer all questions before submitting.");
+    return;
+  }
             quiz.forEach((q, index) => {
               // const selected = userAnswer[`${index}-${q.options.find(opt => userAnswer === `${index}-${opt}`)}`];
               if (results[index] === "correct") {
               correctCount++;
-              results[index] = "correct";
+              // results[index] = "correct";
+              updatedResults[index] = "correct";
             }else {
-              results[index] = "wrong";
+              // results[index] = "wrong";
+              updatedResults[index] = "wrong";
             }
             });
             setScore(correctCount);
-            setResults(results);
+            setResults(updatedResults);
             setIsSubmitted(true);
+            
+            const user = auth.currentUser;
+            if (user) {
+              const quizData = {
+                uid: user.uid,
+                score: correctCount,
+                total: quiz.length,
+                timestamp: Timestamp.now(),
+                details: quiz.map((q, index) => ({
+                  question: q.question,
+                  selected: userAnswer[index],
+                  correct: q.answer,
+                  result: updatedResults[index],
+                }))
+              };
+        
+              try {
+                await addDoc(collection(db, "quizResults"), quizData);
+                toast.success("Score saved to Firestore!");
+              } catch (err) {
+                console.error("Error saving score:", err);
+                toast.error("Failed to save score.");
+              }
+            }
+            
+          };
+          const handleViewFirestoreHistory  = async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+        
+            try {
+              const q = query(collection(db, "quizResults"), where("uid", "==", user.uid));
+              const querySnapshot = await getDocs(q);
+              const results = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+              setQuizHistory(results);
+            } catch (err) {
+              console.error("Error fetching past results:", err);
+              toast.error("Failed to load quiz history.");
+            }
           };
 
 
@@ -215,7 +269,7 @@ function FrontUi(){
                const isSelected = userAnswer[i] === option;
                const isCorrectAnswer = q.answer === option;
                const isUserWrongAnswer = isSelected && !isCorrectAnswer;
-  let className = "option";
+               let className = "option";
 
   // if (results[i] === "correct" && option === q.answer) {
   //   className += " correct";
@@ -255,9 +309,15 @@ function FrontUi(){
                 )}*/}
       </div>
     ))}
+           {/* <div className="score-section">
+              <button onClick={calculateScore} className="submit-button">Submit Quiz</button>
+              {score !== null && (
+                <p className="score-text">Your Score: {score} / {quiz.length}</p>
+              )}
+            </div> */}
     
     <div className="storage">
-      <button className="history-button" onClick={handleViewHistory}>History</button>
+      <button className="history-button" onClick={handleViewFirestoreHistory}>History</button>
       <button className="history-clear-button" onClick={handleClearHistory}>Clear History</button>
     </div>
   </div>
@@ -267,30 +327,41 @@ function FrontUi(){
 
             </div>
             {quiz.length > 0 && (
-  <div className="score-section">
-    <button onClick={calculateScore} className="submit-button">
-      Submit Quiz
-    </button>
-    {score !== null && (
-      
-      <p className="score-text">Your Score: {score} / {quiz.length}</p>
-    )}
-  </div>
-)}
-
+              <div className="score-section">
+                <button onClick={calculateScore} className="submit-button"  disabled={isSubmitted}>
+                  Submit Quiz
+                </button>
+                {score !== null && (
+                  
+                  <p className="score-text">Your Score: {score} / {quiz.length}</p>
+                )}
+              </div>
+            )}
 
             {quizHistory.length > 0 && (
-  <div className="quiz-history">
-    <h3>Quiz History</h3>
-    {quizHistory.map((item, index) => (
-      <div key={index} className="history-item">
-        <p> Question : {item.question}</p>
-        <p> Your Answer : {item.userAnswer}</p>
-        <p> Correct Answer : {item.correctAnswer}</p>
-        <p> Result : {item.result}</p>
-      </div>
-    ))}
-  </div>
+            <div className="quiz-history">
+              <h3>Quiz History</h3>
+              {quizHistory.map((item, index) => (
+                <div key={index} className="history-item">
+                  <p>Score: {item.score} / {item.total}</p>
+                  <p>Date: {item.timestamp?.toDate().toLocaleString()}</p>
+                  
+                  {/* <p> Question : {item.question}</p>
+                  <p> Your Answer : {item.userAnswer}</p>
+                  <p> Correct Answer : {item.correctAnswer}</p>
+                  <p> Result : {item.result}</p> */}
+                  {item.details && item.details.map((d, i) => (
+                    <div key={i}>
+                        <p>Q{i + 1}: {d.question}</p>
+                        <p>Your Answer: {d.selected}</p>
+                        <p>Correct Answer: {d.correct}</p>
+                        <p>Result: {d.result}</p>
+                    </div>
+                    ))}
+                  
+                </div>
+                ))}
+              </div>
 )}
     <div>
       <h1>Welcome to the App!</h1>
