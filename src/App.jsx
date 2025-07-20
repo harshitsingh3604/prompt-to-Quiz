@@ -1,4 +1,3 @@
-
 import './App.css'
 import FrontUi from './components/FrontUi'
 import { useState } from "react";
@@ -9,7 +8,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import {app} from "./firebase"
 import { getFirestore } from "firebase/firestore";
-// import Quiz from "./components/Quiz"; 
+
+
 
 function App() {
 
@@ -43,7 +43,7 @@ function App() {
         {showSignup ? (
           <Signuppage />
         ) : (
-          <Loginpage />
+          <Loginpage onLoginSuccess={() => setUser(auth.currentUser)} />
         )}
 
         <button onClick={signup}>
@@ -59,7 +59,6 @@ function App() {
     <div>
       <div className = "wrapper">
         <FrontUi></FrontUi>   
-        {/* <Quiz />     */}
         </div> 
     </div>
   )

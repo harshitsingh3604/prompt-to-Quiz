@@ -1,8 +1,6 @@
-import { signInWithEmailAndPassword,onAuthStateChanged } from "firebase/auth";
-import { auth} from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 import { useState } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -11,7 +9,7 @@ function Loginpage({ onLoginSuccess }){
     
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    
 
     function emailSet(event){
          return(
@@ -23,28 +21,24 @@ function Loginpage({ onLoginSuccess }){
         setPassword(event.target.value)
       )
     }
-    function erroeSet(event){
-      return(
-        setError(event.target.value)
-      )
-    }
+   
+    
 
 
     const handleLogin  = async (event) => {
         event.preventDefault(); 
         try {
           await signInWithEmailAndPassword(auth, email, password);
-          alert("Login  successful!");
-          // toast.warning(" Please enter a quiz prompt before generating.");
-          
-          setError(""); 
-          if (onLoginSuccess) {
-            toast.success("Login successfully!");
-            onLoginSuccess(); 
-          }
+          alert("Login Successfullty")
+          setTimeout(() => {
+            if (onLoginSuccess) {
+              
+              onLoginSuccess();
+            }
+          }, 2000);
         } catch (err) {
-          // setError(err.message);
-          toast.error(err.message); 
+           
+          alert(" Login Failed: "+ err.message)
         }
       };
       
@@ -57,7 +51,7 @@ function Loginpage({ onLoginSuccess }){
                 type="email"
                 value={email}
                 onChange={emailSet}
-                placeholder="email"
+                placeholder="Enter your email"
                 required
                 />
                 <input
@@ -71,14 +65,10 @@ function Loginpage({ onLoginSuccess }){
               </div>
             </form>
 
-            {/* {error && <p style={{ color: "red" }}>{error}</p>} show error if exists */}
-            <ToastContainer />
+            
+           
         </div>
       )
     }
 
     export default Loginpage;
-
-
-    // email - harshitsingh123@gmail.com
-    // password - harshit123

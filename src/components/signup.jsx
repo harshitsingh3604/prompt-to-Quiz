@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword ,updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
 import { useState } from "react";
 
@@ -10,6 +10,7 @@ function Signuppage(){
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [name, setName] = useState(""); 
 
     function emailSet(event){
       return(
@@ -21,12 +22,20 @@ function Signuppage(){
         setPassword(event.target.value)
       )
     }
+    function fullName(event){
+      return(
+        setName(event.target.value)
+      )
+    }
 
 
     const handleSignup = async (e) => {
         e.preventDefault(); 
         try {
-          await createUserWithEmailAndPassword(auth, email, password);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(userCredential.user, {
+            displayName: name,
+          });
           alert("Signup successful!");
           setError(""); 
         } catch (err) {
@@ -36,6 +45,12 @@ function Signuppage(){
       return (
         <div>
             <form onSubmit={handleSignup}>
+            <input
+              type="text"
+              value={name}
+              onChange={fullName}
+              placeholder="Enter your name"
+            />
             <input
                 type="email"
                 value={email}
