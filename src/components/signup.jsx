@@ -1,7 +1,7 @@
 import { createUserWithEmailAndPassword ,updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
 import { useState } from "react";
-
+import "./Signupstyle.css";
 
 
 function Signuppage(){
